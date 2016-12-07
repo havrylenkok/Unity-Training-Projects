@@ -4,11 +4,15 @@ using System;
 
 public class Player : MonoBehaviour
 {
-    public float maxSpeed = 3;
+    public float maxSpeed = 3f;
     public float speed = 50f;
     public float jumpPower = 150f;
+    // stats
+    public int curHealth;
+    public int maxHealth = 5;
 
     public bool grounded = true;
+    public bool canDoubleJump = false;
 
     private Rigidbody2D rb2d;
     private Animator anim;
@@ -18,6 +22,8 @@ public class Player : MonoBehaviour
     {
         rb2d = gameObject.GetComponent<Rigidbody2D> ();
         anim = gameObject.GetComponent<Animator> ();
+
+        curHealth = maxHealth;
     }
 	
     // Update is called once per frame
@@ -39,10 +45,28 @@ public class Player : MonoBehaviour
         }
 
         // jumping
-        if (Input.GetButtonDown ("Jump") && grounded) {
-            // space pressed
-            rb2d.AddForce (Vector2.up * jumpPower);
-//            Debug.Log ("Jump"); // log example
+        if (Input.GetButtonDown ("Jump")) {
+            if (grounded) {
+                rb2d.AddForce (Vector2.up * jumpPower);// space pressed
+                canDoubleJump = true;
+            } else {
+                if (canDoubleJump) {
+                    canDoubleJump = false;
+                    rb2d.velocity = new Vector2 (rb2d.velocity.x, 0); // don't fall
+                    rb2d.AddForce (Vector2.up * jumpPower / 1.75f);// space pressed
+                }
+            }
+           
+           
+//            Debug.Log ("Jump"); // log example 
+        }
+
+        if (curHealth > maxHealth) {
+            curHealth = maxHealth;
+        }
+
+        if (curHealth <= 0) {
+            Die ();
         }
        
     }
@@ -71,5 +95,11 @@ public class Player : MonoBehaviour
         }
 
         rb2d.AddForce ((Vector2.right * speed) * h);
+    }
+
+    void Die ()
+    {
+        // restart
+        Application.LoadLevel (Application.loadedLevel);
     }
 }
